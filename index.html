@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messo² Cafe — PLAYBACK SYSTEM</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #171714;
+      color: #e8e3d8;
+      font-family: sans-serif;
+    }
+
+    .player {
+      width: min(360px, 80%);
+      padding: 32px;
+      border: 1px solid #514e43;
+      border-radius: 4px;
+      text-align: center;
+      background: #22221e;
+    }
+
+    .subtitle {
+      color: #aaa18e;
+      font-size: 12px;
+      letter-spacing: 3px;
+    }
+
+    .subtitle span {
+        display: block;
+        margin-top: 6px;
+        font-size: 10px;
+        letter-spacing: 2px;
+    }
+
+    .message {
+        font-size: 10px;
+        font-weight: 300;
+        color: #d3cec3;
+        letter-spacing: 1px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      border: 1px solid #aaa18e;
+      border-radius: 2px;
+      background: transparent;
+      color: #e8e3d8;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #38382f;
+    }
+  </style>
+</head>
+<body>
+  <main class="player">
+    <p class="subtitle">
+        PLAYBACK SYSTEM<br>
+    <span>for Instrumental</span></p>
+    <h1>Messo² Cafe</h1>
+    <p id="welcome">ようこそ。</p>
+    <p class="message">あの空席はあなたのもの</p>
+    <button id="play">▶ CHECK IN</button>
+  </main>
+
+  <script>
+    const welcome = document.getElementById("welcome");
+
+  setTimeout(() => {
+    welcome.textContent = "処理中...";
+  }, 1300);
+
+  setTimeout(() => {
+    welcome.textContent = "おかえりなさい！";
+  }, 4000);
+
+  document.getElementById("play").addEventListener("click", () => {
+    window.location.href = "catalogue.html";
+  });
+  </script>
+</body>
+</html>

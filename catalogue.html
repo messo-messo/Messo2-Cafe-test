@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Messo² Cafe</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px 20px 48px;
+      background: #171714;
+      color: #e8e3d8;
+      font-family: sans-serif;
+    }
+
+    .catalogue {
+      width: min(500px, 100%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      text-align: center;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 27px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    .brand-subtitle {
+      margin: 0;
+      color: #aaa18e;
+      font-size: 10px;
+      letter-spacing: 2px;
+      line-height: 1.7;
+    }
+
+    .brand-subtitle span {
+      display: block;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+    }
+
+    button {
+      border: 0;
+      background: transparent;
+      color: #e8e3d8;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:hover { color: #c4b99f; }
+
+    #shuffle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 8px;
+      color: #777363;
+      font-size: 21px;
+    }
+
+    #shuffle[aria-pressed="true"] { color: #e8e3d8; }
+
+    .line {
+      height: 1px;
+      margin: 22px 0;
+      background: #514e43;
+    }
+
+    .now-playing {
+      padding: 24px 0 10px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: #aaa18e;
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
+
+    #current-title {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 400;
+    }
+
+    .seek-wrap { margin-top: 28px; }
+
+    .seekbar {
+      position: relative;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      touch-action: pan-y;
+      outline-offset: 4px;
+    }
+
+    .seek-track {
+      position: relative;
+      width: 100%;
+      height: 2px;
+      background: #514e43;
+    }
+
+    #seek-progress {
+      width: 0%;
+      height: 100%;
+      background: #d6d0c3;
+    }
+
+    #coffee-cursor {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+      line-height: 1;
+      filter: grayscale(1);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      color: #aaa18e;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 38px;
+      padding: 24px 0 12px;
+    }
+
+    .controls button {
+      min-width: 36px;
+      min-height: 36px;
+      font-size: 24px;
+    }
+
+    #play { font-size: 21px; }
+
+    .track {
+      padding: 17px 0;
+      border-bottom: 1px solid #38382f;
+      cursor: pointer;
+    }
+
+    .track-info {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .number, .duration, .release {
+      color: #aaa18e;
+      font-size: 11px;
+    }
+
+    .track-name { flex: 1; font-size: 14px; }
+
+    .track.active .track-name { color: #fffaf0; }
+
+    .track.active .number::before {
+      content: "▶ ";
+      font-size: 9px;
+    }
+
+    .release { margin: 8px 0 0 30px; }
+
+    .movie {
+      display: inline-block;
+      margin: 10px 0 0 30px;
+      color: #aaa18e;
+      font-size: 11px;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    #status {
+      color: #777363;
+      font-size: 10px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 420px) {
+      body { padding: 24px 18px 36px; }
+      .brand-title { font-size: 24px; }
+    }
+
+    .guide-link {
+      display: inline-block;
+      margin-top: 9px;
+      color: #b8aa91;
+      font-size: 12px;
+      text-decoration: none;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+    }
+
+    .guide-link :hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    .guide-link,
+    .guide-link :visited,
+    .guide-link :hover,
+    .guide-link :active {
+      color: #b8aa91;
+    }
+
+    .guide-link,
+    .guide-link :visited,
+    .guide-link :hover,
+    .guide-link :active {
+      color: #b8aa91 !important;
+      text-decoration: underline !important;
+      text-underline-offset: 4px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <main class="catalogue">
+    <header class="topbar">
+      <h1 class="brand-title">Messo² Cafe</h1>
+      <p class="brand-subtitle">PLAYBACK SYSTEM<span>for Instrumental</span></p>
+      <button id="shuffle" aria-label="シャッフル切り替え" aria-pressed="false" title="シャッフル切り替え">⇄</button>
+      <a
+      class="guide-link"
+      href="https://lit.link/okoge_e"
+      target="_blank"
+      rel="noopener noreferrer"
+      >
+    ご利用案内↗︎
+    </a>
+    </header>
+
+    <div class="line"></div>
+
+    <section class="now-playing" aria-label="再生中">
+      <p class="eyebrow">NOW PLAYING</p>
+      <h2 id="current-title">ー</h2>
+
+      <div class="seek-wrap">
+        <div id="seekbar" class="seekbar" role="slider" tabindex="0"
+          aria-label="再生位置" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="seek-track">
+            <div id="seek-progress"></div>
+          </div>
+          <span id="coffee-cursor" aria-hidden="true">☕</span>
+        </div>
+        <div class="time-row">
+          <span id="current-time">00:00</span>
+          <span id="total-time">00:00</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="play" aria-label="再生">▶</button>
+        <button id="next" aria-label="次の曲">⏭</button>
+      </div>
+    </section>
+
+    <div class="line"></div>
+
+    <section aria-label="曲リスト">
+      <p class="eyebrow">TRACK LIST</p>
+      <div id="tracks"></div>
+    </section>
+
+    <p id="status">音源を選択してください。</p>
+    <audio id="audio" preload="metadata"></audio>
+  </main>
+  <script>
+    // 曲を増やすときは、この一覧に追加します
+    const playlist = [
+      {
+        title: "海へ",
+        file: "music/海へ Inst.mp3",
+        duration: "04:02",
+        release: "2025.10.11",
+        youtube: "https://youtu.be/4Kv7r0Ak3X4"
+      },
+      {
+        title: "花雨",
+        file: "music/花雨 Inst.mp3",
+        duration: "03:32",
+        release: "2026.04.03",
+        youtube: "https://youtu.be/kAp6n8pOneg"
+      },
+      {
+        title: "モンタージュ",
+        file: "music/モンタージュInst.mp3",
+        duration: "02:53",
+        release: "2026.07.03",
+        youtube: "https://youtu.be/1ow_hEuRHNc"
+      },
+      {
+        title: "壊夏",
+        file: "music/壊夏 Inst.mp3",
+        duration: "02:49",
+        release: "2026.08.08",
+        youtube: "https://youtu.be/DH-N_b8zHtY"
+      }
+    ]
+    
+
+    const audio = document.getElementById("audio");
+    const playButton = document.getElementById("play");
+    const nextButton = document.getElementById("next");
+    const shuffleButton = document.getElementById("shuffle");
+    const status = document.getElementById("status");
+    const tracks = document.getElementById("tracks");
+    const currentTitle = document.getElementById("current-title");
+    const seekbar = document.getElementById("seekbar");
+    const seekProgress = document.getElementById("seek-progress");
+    const coffeeCursor = document.getElementById("coffee-cursor");
+    const currentTime = document.getElementById("current-time");
+    const totalTime = document.getElementById("total-time");
+
+    let currentIndex = 0;
+    let shuffle = false;
+    let isSeeking = false;
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function updateSeekbar() {
+      const duration = audio.duration;
+      const progress = Number.isFinite(duration) && duration > 0
+        ? Math.min(1, Math.max(0, audio.currentTime / duration))
+        : 0;
+      seekProgress.style.width = `${progress * 100}%`;
+      coffeeCursor.style.left = `${progress * 100}%`;
+      seekbar.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+      currentTime.textContent = formatTime(audio.currentTime);
+      totalTime.textContent = formatTime(duration);
+    }
+
+    function setSeekPosition(clientX) {
+      if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+      const rect = seekbar.getBoundingClientRect();
+      const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      audio.currentTime = ratio * audio.duration;
+      updateSeekbar();
+    }
+
+    // 曲リストを作成
+    playlist.forEach((track, index) => {
+      const item = document.createElement("article");
+      item.className = "track";
+      item.dataset.index = index;
+
+      const info = document.createElement("div");
+      info.className = "track-info";
+
+      const number = document.createElement("span");
+      number.className = "number";
+      number.textContent = `M${index + 1}.`;
+
+      const name = document.createElement("span");
+      name.className = "track-name";
+      name.textContent = track.title;
+
+      const duration = document.createElement("span");
+      duration.className = "duration";
+      duration.textContent = track.duration;
+
+      info.append(number, name, duration);
+      item.appendChild(info);
+
+      const release = document.createElement("p");
+      release.className = "release";
+      release.textContent = `release: ${track.release}`;
+      item.appendChild(release);
+
+      if (track.youtube) {
+        const link = document.createElement("a");
+        link.className = "movie";
+        link.href = track.youtube;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "VIEW MV ↗";
+        link.addEventListener("click", event => event.stopPropagation());
+        item.appendChild(link);
+      }
+
+      item.addEventListener("click", () => playTrack(index));
+      tracks.appendChild(item);
+    });
+
+    function updateTrackSelection() {
+      document.querySelectorAll(".track").forEach((item, index) => {
+        item.classList.toggle("active", index === currentIndex);
+      });
+    }
+
+    // 曲を再生
+    async function playTrack(index) {
+      currentIndex = index;
+      const track = playlist[index];
+      currentTitle.textContent = track.title;
+      updateTrackSelection();
+
+      if (!audio.src.endsWith(encodeURI(track.file)) && !audio.src.endsWith(track.file)) {
+        audio.src = track.file;
+        audio.load();
+      }
+
+      try {
+        await audio.play();
+        playButton.textContent = "Ⅱ";
+        playButton.setAttribute("aria-label", "一時停止");
+        status.textContent = `NOW PLAYING — ${track.title}`;
+      } catch (error) {
+        playButton.textContent = "▶";
+        playButton.setAttribute("aria-label", "再生");
+        status.textContent = "再生できません。音源の場所とファイル名を確認してください。";
+      }
+    }
+
+    playButton.addEventListener("click", async () => {
+      if (audio.paused) {
+        if (!audio.src) {
+          if (shuffle && playlist.length > 1){
+            let randomIndex;
+          
+          do{
+          randomIndex = Math.floor(Math.random() * playlist.length);
+        } while (randomIndex === currentIndex);
+        
+        await playTrack(randomIndex);
+      }else {
+        await playTrack(currentIndex)
+      }
+        } 
+        else {
+          try {
+            await audio.play();
+          } catch (error) {
+            status.textContent = "再生できません。音源の場所とファイル名を確認してください。";
+          }
+        }
+      } else {
+        audio.pause();
+      }
+    });
+
+    function playNext() {
+      if (playlist.length < 1) return;
+      let nextIndex;
+      if (shuffle && playlist.length > 1) {
+        do {
+          nextIndex = Math.floor(Math.random() * playlist.length);
+        } while (nextIndex === currentIndex);
+      } else {
+        nextIndex = (currentIndex + 1) % playlist.length;
+      }
+      playTrack(nextIndex);
+    }
+
+    nextButton.addEventListener("click", playNext);
+
+    shuffleButton.addEventListener("click", () => {
+      shuffle = !shuffle;
+      shuffleButton.setAttribute("aria-pressed", String(shuffle));
+      status.textContent = shuffle ? "SHUFFLE ON" : "SHUFFLE OFF";
+    });
+
+    audio.addEventListener("loadedmetadata", updateSeekbar);
+    audio.addEventListener("timeupdate", updateSeekbar);
+    audio.addEventListener("durationchange", updateSeekbar);
+
+    audio.addEventListener("play", () => {
+      playButton.textContent = "Ⅱ";
+      playButton.setAttribute("aria-label", "一時停止");
+    });
+
+    audio.addEventListener("pause", () => {
+      playButton.textContent = "▶";
+      playButton.setAttribute("aria-label", "再生");
+    });
+
+    audio.addEventListener("ended", () => {
+      if (shuffle || currentIndex < playlist.length - 1) {
+        playNext();
+      } else {
+        playButton.textContent = "▶";
+        status.textContent = "END OF LIST";
+      }
+    });
+
+    seekbar.addEventListener("click", event => setSeekPosition(event.clientX));
+
+    seekbar.addEventListener("keydown", event => {
+      if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+        event.preventDefault();
+        const direction = event.key === "ArrowRight" ? 1 : -1;
+        audio.currentTime = Math.min(audio.duration, Math.max(0, audio.currentTime + direction * 5));
+        updateSeekbar();
+      }
+    });
+
+    updateSeekbar();
+  </script>
+
+</body>
+
+</html>
